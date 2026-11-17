@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#0f766e" />
+    <!-- Installierbar als Web-App (iPhone: Safari → Teilen → Zum Home-Bildschirm) -->
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="./apple-touch-icon.png" />
+    <link rel="icon" type="image/png" href="./icon-192.png" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Zuschnitt" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <title>Plattenzuschnitt</title>
+    <script type="module" crossorigin src="./assets/index-XH5kUbAI.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-CbEC-HrX.css">
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="topbar-inner">
+        <div class="brand">
+          <span id="brand-icon" class="brand-icon"></span>
+          <div>
+            <h1>Plattenzuschnitt</h1>
+            <p class="brand-sub">Schnittpläne mit Restlager</p>
+          </div>
+          <span class="brand-divider" aria-hidden="true"></span>
+          <div id="project-slot"></div>
+        </div>
+        <div class="topbar-actions">
+          <div id="status" class="status" role="status" aria-live="polite">
+            <span class="status-dot"></span><span id="status-text">Bereit</span>
+            <button id="cancel" type="button" class="status-cancel" hidden title="Berechnung abbrechen" aria-label="Berechnung abbrechen"></button>
+          </div>
+          <button id="cutmode-top" type="button" class="btn btn-quiet" title="Zuschnitt-Modus: Platten der Reihe nach abarbeiten" disabled><span class="btn-text">Zuschnitt</span></button>
+          <button id="print" type="button" class="btn btn-quiet" title="Schnittplan drucken oder als PDF speichern"><span class="btn-text">Drucken</span></button>
+          <button id="clear" type="button" class="btn btn-quiet" title="Neues Projekt – das aktuelle bleibt in der Projektliste gespeichert"><span class="btn-text">Neu</span></button>
+        </div>
+      </div>
+      <div class="progress-track" aria-hidden="true"><div id="progress-bar" class="progress-bar"></div></div>
+    </header>
+
+    <main class="layout">
+      <section class="pane pane-input" aria-label="Eingaben">
+        <nav class="tabs" role="tablist" aria-label="Bereiche">
+          <button class="tab" role="tab" id="tab-parts" aria-controls="panel-parts" data-icon="parts">Teile <span class="badge" id="badge-parts"></span></button>
+          <button class="tab" role="tab" id="tab-stock" aria-controls="panel-stock" data-icon="sheet">Rohplatten <span class="badge" id="badge-stock"></span></button>
+          <button class="tab" role="tab" id="tab-remnants" aria-controls="panel-remnants" data-icon="box">Restlager <span class="badge" id="badge-remnants"></span></button>
+          <button class="tab" role="tab" id="tab-settings" aria-controls="panel-settings" data-icon="sliders">Einstellungen</button>
+        </nav>
+
+        <div class="panel" role="tabpanel" id="panel-parts" aria-labelledby="tab-parts">
+          <div class="stage-bar">
+            <div class="stage-row">
+              <span class="stage-label">Rechnen mit</span>
+              <div id="seg-stage" class="segmented segmented-stage"></div>
+            </div>
+            <p id="stage-hint" class="stage-hint"></p>
+          </div>
+          <div class="panel-head">
+            <p id="parts-summary" class="panel-sub"></p>
+            <div id="parts-tools" class="toolbar"></div>
+          </div>
+          <div class="table-wrap"><table id="parts-table" class="grid"></table></div>
+          <button id="add-part" type="button" class="btn btn-add">Teil hinzufügen</button>
+        </div>
+
+        <div class="panel" role="tabpanel" id="panel-stock" aria-labelledby="tab-stock" hidden>
+          <p id="stock-mode-hint" class="notice notice-info"></p>
+          <div class="panel-head">
+            <p id="stock-summary" class="panel-sub"></p>
+            <div id="stock-tools" class="toolbar"></div>
+          </div>
+          <div class="table-wrap"><table id="stock-table" class="grid"></table></div>
+          <button id="add-stock" type="button" class="btn btn-add">Rohplatte hinzufügen</button>
+        </div>
+
+        <div class="panel" role="tabpanel" id="panel-remnants" aria-labelledby="tab-remnants" hidden>
+          <div class="panel-head">
+            <p id="remnant-summary" class="panel-sub"></p>
+            <label class="toggle"><input id="use-remnants" type="checkbox" /><span class="toggle-track"></span> In diesem Projekt einplanen</label>
+          </div>
+          <p id="remnant-empty" class="empty">
+            Noch keine Reststücke eingelagert. Nach einer Berechnung erscheinen verwertbare Reste rechts im Ergebnis –
+            mit „Zuschnitt buchen“ kommen sie hierher.
+          </p>
+          <p class="field-hint">Reste werden nur eingeplant, wenn „In diesem Projekt einplanen“ an ist – vorher kurz prüfen, ob sie noch da sind.</p>
+          <div class="table-wrap"><table id="remnant-table" class="grid"></table></div>
+          <button id="add-remnant" type="button" class="btn btn-add">Reststück von Hand erfassen</button>
+        </div>
+
+        <div class="panel" role="tabpanel" id="panel-settings" aria-labelledby="tab-settings" hidden>
+          <div class="settings">
+            <section class="setting-group">
+              <h3>Anzeige</h3>
+              <div class="field">Maßeinheit für Teile, Platten und Reste <div id="seg-unit" class="segmented"></div></div>
+              <p class="field-hint">Schnittfuge, Besäumung, Aufmaß und Umleimerstärke bleiben in mm.</p>
+            </section>
+            <section class="setting-group">
+              <h3>Säge</h3>
+              <div class="field-row">
+                <label class="field">Schnittfuge <span class="unit-input"><input id="kerf" type="number" min="0" step="0.1" inputmode="decimal" /><span>mm</span></span></label>
+                <label class="field" title="Wird an allen vier Seiten der Rohplatte abgeschnitten">Randbesäumung <span class="unit-input"><input id="trim" type="number" min="0" step="0.5" inputmode="decimal" /><span>mm</span></span></label>
+              </div>
+            </section>
+            <section class="setting-group">
+              <h3>Optimierung</h3>
+              <div class="field">Ziel <div id="seg-priority" class="segmented"></div></div>
+              <div class="field">Erste Schnitte <div id="seg-first-cut" class="segmented"></div></div>
+              <div class="field">Genauigkeit <div id="seg-effort" class="segmented"></div></div>
+            </section>
+            <section class="setting-group">
+              <h3>Berücksichtigen</h3>
+              <label class="toggle"><input id="consider-grain" type="checkbox" /><span class="toggle-track"></span> Faserrichtung</label>
+              <label class="toggle"><input id="show-edges" type="checkbox" /><span class="toggle-track"></span> Kantenumleimer</label>
+              <label class="toggle"><input id="single-stock" type="checkbox" /><span class="toggle-track"></span> Nur eine Plattengröße</label>
+            </section>
+            <section class="setting-group">
+              <h3>Aufmaß auf Länge und Breite</h3>
+              <div class="field-row">
+                <label class="field" title="Zugabe auf das Fertigmaß für den groben Zuschnitt">Rohzuschnitt <span class="unit-input"><input id="allowance-rough" type="number" min="0" step="1" inputmode="decimal" /><span>mm</span></span></label>
+                <label class="field" title="Zusätzliche Zugabe auf den Rohzuschnitt für Furnier oder HPL">Furnier / HPL <span class="unit-input"><input id="allowance-veneer" type="number" min="0" step="1" inputmode="decimal" /><span>mm</span></span></label>
+              </div>
+              <p class="field-hint">Gilt für das ganze Maß, z. B. 20 mm = 10 mm je Seite. Furnier/HPL = Fertigmaß + beide Aufmaße.</p>
+            </section>
+            <section class="setting-group feature-edges">
+              <h3>Kantenumleimer</h3>
+              <label class="toggle"><input id="edge-deduction" type="checkbox" /><span class="toggle-track"></span> Umleimerstärke vom Zuschnitt abziehen</label>
+              <label class="field">Umleimerstärke je Seite <span class="unit-input"><input id="edge-thickness" type="number" min="0" step="0.1" inputmode="decimal" /><span>mm</span></span></label>
+              <p class="field-hint">Querseiten verkürzen die Länge, Längsseiten die Breite. Gilt für Fertigmaß und Rohzuschnitt, nicht für Furnier/HPL.</p>
+            </section>
+            <section class="setting-group">
+              <h3>Reststücke aufbewahren ab</h3>
+              <div class="field-row">
+                <label class="field">Länge <span class="unit-input"><input id="offcut-length" type="number" min="0" step="10" inputmode="decimal" /><span>mm</span></span></label>
+                <label class="field">Breite <span class="unit-input"><input id="offcut-width" type="number" min="0" step="10" inputmode="decimal" /><span>mm</span></span></label>
+              </div>
+            </section>
+          </div>
+        </div>
+      </section>
+
+      <section class="pane pane-result" aria-labelledby="h-result">
+        <h2 id="h-result" class="sr-only">Schnittplan</h2>
+        <div id="errors" class="notice notice-error" hidden></div>
+        <div id="finish-list" class="finish-list" hidden></div>
+        <dl id="kpis" class="kpis"></dl>
+        <button id="start-cut" type="button" class="btn btn-primary btn-start-cut" hidden></button>
+        <div id="unplaced" class="notice notice-warn" hidden></div>
+
+        <div id="viewer" class="viewer" hidden>
+          <div class="viewer-head">
+            <div>
+              <div id="viewer-title" class="viewer-title"></div>
+              <div id="viewer-meta" class="viewer-meta"></div>
+            </div>
+            <div class="pager">
+              <button id="prev-sheet" type="button" class="btn-icon" aria-label="Vorherige Platte"></button>
+              <span id="pager-text" class="pager-text"></span>
+              <button id="next-sheet" type="button" class="btn-icon" aria-label="Nächste Platte"></button>
+            </div>
+          </div>
+          <div id="viewer-drawing" class="viewer-drawing"></div>
+          <details id="cut-details" class="cut-details">
+            <summary><span>Schnittfolge</span> <span id="cut-count" class="badge"></span></summary>
+            <div class="table-wrap"><table id="cut-table" class="cut-table"></table></div>
+          </details>
+          <div id="thumbs" class="thumbs" role="listbox" aria-label="Platten"></div>
+        </div>
+
+        <div id="offcuts" class="offcuts" hidden>
+          <div class="offcuts-head">
+            <div>
+              <h3>Verwertbare Reste</h3>
+              <p id="offcuts-sub" class="panel-sub"></p>
+            </div>
+            <button id="book" type="button" class="btn btn-primary">Zuschnitt buchen</button>
+          </div>
+          <ul id="offcut-list" class="offcut-list"></ul>
+        </div>
+      </section>
+    </main>
+
+    <div id="print-root" class="print-root" aria-hidden="true"></div>
+    <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+    <input id="csv-file" type="file" accept=".csv,text/csv,text/plain" hidden />
+    <input id="project-file" type="file" accept=".json,application/json" hidden />
+    <datalist id="materials"></datalist>
+    <datalist id="edge-bands"></datalist>
+  </body>
+</html>
