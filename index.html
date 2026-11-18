@@ -14,8 +14,8 @@
     <meta name="apple-mobile-web-app-title" content="Zuschnitt" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <title>Plattenzuschnitt</title>
-    <script type="module" crossorigin src="./assets/index-XH5kUbAI.js"></script>
-    <link rel="stylesheet" crossorigin href="./assets/index-CbEC-HrX.css">
+    <script type="module" crossorigin src="./assets/index-osVVsQV3.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-D5NikBkQ.css">
   </head>
   <body>
     <header class="topbar">
@@ -48,6 +48,7 @@
           <button class="tab" role="tab" id="tab-parts" aria-controls="panel-parts" data-icon="parts">Teile <span class="badge" id="badge-parts"></span></button>
           <button class="tab" role="tab" id="tab-stock" aria-controls="panel-stock" data-icon="sheet">Rohplatten <span class="badge" id="badge-stock"></span></button>
           <button class="tab" role="tab" id="tab-remnants" aria-controls="panel-remnants" data-icon="box">Restlager <span class="badge" id="badge-remnants"></span></button>
+          <button class="tab" role="tab" id="tab-sockel" aria-controls="panel-sockel" data-icon="plinth">Sockel</button>
           <button class="tab" role="tab" id="tab-settings" aria-controls="panel-settings" data-icon="sliders">Einstellungen</button>
         </nav>
 
@@ -91,11 +92,16 @@
           <button id="add-remnant" type="button" class="btn btn-add">Reststück von Hand erfassen</button>
         </div>
 
+        <div class="panel" role="tabpanel" id="panel-sockel" aria-labelledby="tab-sockel" hidden>
+          <p class="panel-sub">Korpusmaße eintragen – Gerüst, Auflage und Sockelleisten werden sofort berechnet. Maße in der Einheit aus den Einstellungen, Materialdicke in mm.</p>
+          <div id="sockel-root" class="sockel"></div>
+        </div>
+
         <div class="panel" role="tabpanel" id="panel-settings" aria-labelledby="tab-settings" hidden>
           <div class="settings">
             <section class="setting-group">
               <h3>Anzeige</h3>
-              <div class="field">Maßeinheit für Teile, Platten und Reste <div id="seg-unit" class="segmented"></div></div>
+              <div class="field">Maßeinheit für Teile, Platten, Reste und Sockel <div id="seg-unit" class="segmented"></div></div>
               <p class="field-hint">Schnittfuge, Besäumung, Aufmaß und Umleimerstärke bleiben in mm.</p>
             </section>
             <section class="setting-group">
